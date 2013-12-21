@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="javascript/jquery-2.0.3.js"></script>
+  <script src="javascript/socket.io.js"></script>
+  <script src="javascript/processing.js"></script>
+</head>
+
+<body>
+
+<script id="script" type="text/javascript">
+
+ var kiwisocket = io.connect('http://build.kiwiwearables.com:8080');
+
+ var toParse = null;
+ var Ax = 0;
+ var Ay = 0;
+ var Az = 0;
+
+// Enter your device id and password here
+
+kiwisocket.on('connect', function() {
+  kiwisocket.emit('listen', {device_id: '6', password: '123'});
+});
+
+kiwisocket.on('listen_response', function(data) {
+
+  toParse = JSON.parse(data.message);
+
+  //console.log(data.message);
+
+  Ax = parseFloat(toParse.gx);
+  Ay = parseFloat(toParse.gy);
+  Az = parseFloat(toParse.gz);
+
+});
+</script>
+
+<script type="text/processing" data-processing-target="mycanvas">
+
+float radius = 50.0;
+int X, Y;
+
+boolean dragged = true; //starts out in mouse drag mode
+
+void setup() {
+
+    size( 2100, 1400 );
+    X = 700;
+    Y = 700;
+    background(0);
+
+}
+
+void draw(){  
+
+    // Track circle to new destination
+    X+=(Az)*-1/3;
+    Y+=(Ax)/3;
+
+    if(X <= 0) {
+      X = X+2100
+    }
+    if(X >= 2100) {
+      X = X-2100
+    }
+    if(Y <= 0) {
+      Y = Y+1400
+    }
+    if(Y >= 1400) {
+      Y = Y-1400
+    }
+
+    fill(X%255, Y%255,(X+Y)%255);
+    ellipse(X, Y, 42, 42);
+    //ellipse(width-X, Y, 10, 10);
+
+}
+</script>
+<canvas id="mycanvas"></canvas>
+</body>
+</html>
